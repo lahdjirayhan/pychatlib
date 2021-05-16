@@ -5,8 +5,8 @@ from datetime import datetime
 from chatlib.base import BaseChatData
 
 class WhatsAppChatData(BaseChatData):
-    def __init__(self, *args, **kwargs):
-        super().__init__(app_name = "WhatsApp", *args, **kwargs)
+    def __init__(self, path, *args, **kwargs):
+        super().__init__(path, app_name = "WhatsApp", *args, **kwargs)
         
     def read_from_file(self, path):
         self._date_time, self._sender, self._event, self._message = [], [], [], []

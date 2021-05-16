@@ -4,7 +4,7 @@ from typing import Optional
 
 class BaseChatData:
     """Base class for chat export data structure"""
-    def __init__(self, *args, **kwargs):
+    def __init__(self, path, *args, **kwargs):
         self.database = None
         self.app_name: Optional[str] = kwargs.get("app_name", None)
         self.room: str = None
@@ -17,6 +17,7 @@ class BaseChatData:
         self._date_time, self._sender, self._event, self._message = [], [] ,[] ,[]
 
         self.define_patterns()
+        self.read_from_file(path)
     
     def __str__(self):
         _str = self.__repr__() + "\n\n"

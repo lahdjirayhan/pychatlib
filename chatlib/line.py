@@ -7,8 +7,8 @@ UNICODE_LS = "\u2028"
 UNICODE_PS = "\u2029"
 
 class LineChatData(BaseChatData):
-    def __init__(self, *args, **kwargs):
-        super().__init__(app_name = "LINE", *args, **kwargs)
+    def __init__(self, path, *args, **kwargs):
+        super().__init__(path, app_name = "LINE", *args, **kwargs)
     
     def read_from_file(self, path, anonymize=False):
         self._date_time, self._sender, self._event, self._message = [], [], [], []
