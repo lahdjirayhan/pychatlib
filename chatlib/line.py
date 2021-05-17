@@ -40,12 +40,13 @@ class LineChatData(BaseChatData):
 
         date_pattern = infer_date(self._date_time)
         self._date_time = [datetime.strptime(i, date_pattern) for i in self._date_time]
-        self.database = [self._date_time, self._sender, self._event, self._message] # Not pandas dataframe?
         self.n_entry = len(self._date_time)
         self.start_date, self.end_date = self._date_time[0].date(), self._date_time[-1].date()
 
         if anonymize:
             self.anonymize()
+        
+        self.database = [self._date_time, self._sender, self._event, self._message] # Not pandas dataframe?
 
     def define_patterns(self):
         self.SEP = "\t"  # SEPARATOR, in LINE they only use \t as separators, TIME\tSENDER\tMESSAGE
