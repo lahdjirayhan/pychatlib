@@ -1,0 +1,2 @@
+py_dateinfer==0.4.5
+pydateinfer==0.3.0
