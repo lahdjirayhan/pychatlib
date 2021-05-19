@@ -5,10 +5,23 @@ from datetime import datetime
 from chatlib.base import BaseChatData
 
 class WhatsAppChatData(BaseChatData):
+    """Class to read and contain WhatsApp chat export data"""
     def __init__(self, path, *args, **kwargs):
+        """Create a WhatsAppChatData object using the provided path to export file
+
+        Args:
+            path (str): Path to export file.
+        """
         super().__init__(path, app_name = "WhatsApp", *args, **kwargs)
         
     def read_from_file(self, path):
+        """Read chat data from file
+
+        Args:
+            path (str): Path to export file.
+        
+        Side note: anonymization is not available yet.
+        """
         self._date_time, self._sender, self._event, self._message = [], [], [], []
         with open(path, encoding="utf-8", errors="ignore") as f:
             for line in f:
@@ -41,6 +54,14 @@ class WhatsAppChatData(BaseChatData):
         """, re.VERBOSE)
     
     def parse_row(self, row):
+        """Parse a single row of chat export file
+
+        Export files are read on a row-by-row basis. This function parses the information contained in each row
+        and determines whether a row is continuation for previous row.
+
+        Args:
+            row (str): String, a row from chat export file
+        """
         timestamp, rest_of_line = self._separate_timestamp(row)
         if not timestamp:
             # row is continuation
@@ -83,10 +104,32 @@ class WhatsAppChatData(BaseChatData):
         return sender, message
 
     def _record_continuation(self, line):
+        """Record this line of string as a continuation row
+
+        Adds the current row to previous row's messsage
+
+        Args:
+            line (str): String, a line to be read into database
+        """
         if line:
             self._message[-1] += "\n" + line
 
     def _record_new_row(self, *args, **kwargs):
+        """Record this line of string as a new row
+
+        Adds the current row as a new row. New row requires a timestamp.
+
+        Args:
+            date_time (str): String, parseable into datetime, representing timestamp.
+            sender (str): Name of account involved with a record. Usually, sender of a chat.
+            event (str): Non-chat events, e.g. when someone joins a group or sends an image.
+            message (str): Message provided.
+        
+
+        Side note: when in doubt, it is advisable to resort to saving information in message.
+        This is because separation of event and message is not perfectly reliable, and
+        my style has been to default to message if unable to be sure if it is a non-chat event.
+        """
         self._date_time.append(kwargs["date_time"]) # For a new row, a timestamp must exist. Others may be None.
 
         self._sender.append(kwargs.get("sender"))

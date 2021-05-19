@@ -1,0 +1,15 @@
+# Read The Docs configuration version
+version: 2
+
+# Python version
+python:
+  version: 3.8
+  install:
+  - requirements: docs/requirements.txt
+  - requirements: requirements.txt
+  - method: setuptools
+    path: .
+
+# Sphinx configuration
+sphinx:
+  fail_on_warning: true
