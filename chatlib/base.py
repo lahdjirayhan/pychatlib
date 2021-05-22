@@ -17,7 +17,9 @@ class BaseChatData:
         self._date_time, self._sender, self._event, self._message = [], [] ,[] ,[]
 
         self.define_patterns()
-        self.read_from_file(path)
+
+        anonymize = kwargs.get("anonymize", False)
+        self.read_from_file(path, anonymize=anonymize)
     
     def __str__(self):
         _str = self.__repr__() + "\n\n"
