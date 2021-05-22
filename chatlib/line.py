@@ -134,8 +134,9 @@ class LineChatData(BaseChatData):
                 \w+     # Followed by one or more non-whitespace characters
             )""", re.VERBOSE)
         for i, message in enumerate(self._message):
-            for match in USERNAME_PATTERN.finditer(message):
-                message = message[:match.start()] + ("@" + sender_to_number.get(match.lstrip("@"), "_")) + message[match.end():]
+            if message:
+                for match in USERNAME_PATTERN.finditer(message):
+                    message = message[:match.start()] + ("@" + sender_to_number.get(match.lstrip("@"), "_")) + message[match.end():]
             self._message[i] = message
 
 
