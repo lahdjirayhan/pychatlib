@@ -52,7 +52,7 @@ class LineChatData(BaseChatData):
         for i, event in enumerate(self._event):
             if event and (sender := find_sender_of_event(event)):
                 self._sender[i] = sender
-                self._event[i] = self._event[i].lstrip(sender).lstrip()
+                self._event[i] = self._event[i].replace(sender, "").lstrip()
 
         date_pattern = infer_date(self._date_time)
         self._date_time = [datetime.strptime(i, date_pattern) for i in self._date_time]
