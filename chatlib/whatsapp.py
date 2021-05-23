@@ -110,7 +110,7 @@ class WhatsAppChatData(BaseChatData):
         for i, message in enumerate(self._message):
             if message:
                 for match in AT_MENTION_PATTERN.finditer(message):
-                    message = message[:match.start()] + ("@" + sender_to_number.get(match.lstrip("@"), "_")) + message[match.end():]
+                    message = message[:match.start()] + ("@" + sender_to_number.get(match.group(0).lstrip("@"), "_")) + message[match.end():]
             self._message[i] = message
 
     def _separate_timestamp(self, line_segment):
