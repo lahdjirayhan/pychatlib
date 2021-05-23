@@ -45,7 +45,7 @@ class LineChatData(BaseChatData):
         
         # Find senders of events, if possible
         self.participants = {sender for sender in self._sender if sender is not None}
-        find_sender_of_event = lambda message: next((sender for sender in self.participants if message.startswith(tuple(self.participants))), None)
+        find_sender_of_event = lambda message: next((sender for sender in self.participants if message.startswith(sender)), None)
         for i, event in enumerate(self._event):
             if event and (sender := find_sender_of_event(event)):
                 self._sender[i] = sender
