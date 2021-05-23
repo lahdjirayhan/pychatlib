@@ -73,7 +73,7 @@ class LineChatData(BaseChatData):
 
         self.OBJECT_PATTERN = re.compile(r"""
             ^\[          # Begins with a [
-            [^\]]+       # Followed by one or more of something other than a ]
+            .+           # Followed by one or more of anything other than line separators
             \]           # Followed by a ] (Stickers and media e.g. photo)
             $            # Ends (this is to prevent header-messages, it is quite popular i.e. [ANNOUNCEMENT])
         """, re.VERBOSE)
