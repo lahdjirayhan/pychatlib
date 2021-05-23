@@ -100,9 +100,10 @@ class WhatsAppChatData(BaseChatData):
                 @       # Mention sign, @
                 [\d]+   # One or more numeric characters
             )""" +
+            "|" +       # OR
             "|".join([
-                "(@" + sender + ")" for sender in self._sender
-                if sender not in {None}
+                "(@" + sender + ")" for sender in self.participants
+                if sender not in {None}     # Every known usernames are compiled to one
             ]),
             re.VERBOSE
         )
