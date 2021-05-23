@@ -11,6 +11,9 @@ class WhatsAppChatData(BaseChatData):
 
         Args:
             path (str): Path to export file.
+        
+        Keyword Args:
+            anonymize (bool): If True, the chat data will be anonymized as good as possible. Defaults to False.
         """
         super().__init__(path, app_name = "WhatsApp", *args, **kwargs)
         

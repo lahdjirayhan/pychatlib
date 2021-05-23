@@ -8,8 +8,8 @@ better to not reveal any actual usernames.
 
 While this package can anonymize the chat data, I have to admit (and **warn** you) that it is not perfect.
 It only anonymizes username mentions, e.g. something that starts with an @ sign, and certainly **can not**
-anonymize names (either proper or nickname), locations, etc. that are uttered in a chat; because it can't
-tell.
+anonymize names (either proper or nickname), locations, etc. that are uttered in the middle of a chat;
+because it can't tell.
 
 The general process of anonymization is:
 
