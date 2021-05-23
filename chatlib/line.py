@@ -124,7 +124,7 @@ class LineChatData(BaseChatData):
         sender_to_number = {j: str(i) for i, j in enumerate(self.participants) if j != UNKNOWN}
 
         # Anonymize sender list
-        self._sender = [sender_to_number.get(sender, sender) for sender in self._sender if sender != UNKNOWN]
+        self._sender = [sender_to_number.get(sender, sender) for sender in self._sender]
         
         # Anonymize usernames in messages
         PARTICIPANT_PATTERN = re.compile(
