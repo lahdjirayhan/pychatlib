@@ -100,10 +100,12 @@ class WhatsAppChatData(BaseChatData):
         # @DDDDDDDDDDDDD where D is a digit. There could be variations in other locale which I haven't seen.
                 # Anonymize usernames in messages
         PARTICIPANT_PATTERN = re.compile(
+            "(" +
             "|".join([
-                "(@" + sender + ")" for sender in self.participants
+                "@" + sender for sender in self.participants
                 if sender not in {None}
-            ])
+            ]) +
+            ")"
         )
 
         UNKNOWN_USERNAME_PATTERN = re.compile(

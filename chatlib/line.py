@@ -128,10 +128,12 @@ class LineChatData(BaseChatData):
         
         # Anonymize usernames in messages
         PARTICIPANT_PATTERN = re.compile(
+            "(" +
             "|".join([
-                "(@" + sender + ")" for sender in self.participants
+                "@" + sender for sender in self.participants
                 if sender not in {None, UNKNOWN}
-            ])
+            ]) +
+            ")"
         )
 
         UNKNOWN_USERNAME_PATTERN = re.compile(
