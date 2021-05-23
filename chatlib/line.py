@@ -124,20 +124,29 @@ class LineChatData(BaseChatData):
         self._sender = [sender_to_number.get(sender, sender) for sender in self._sender if sender != UNKNOWN]
         
         # Anonymize usernames in messages
-        USERNAME_PATTERN = re.compile(
+        PARTICIPANT_PATTERN = re.compile(
             "|".join([
                 "(@" + sender + ")" for sender in self.participants
-                if sender not in {None, UNKNOWN} # Every sender names known is compiled to one
-            ]) +
-            "|" +       # OR
-            r"""(
-                @       # Begins with @
-                \w+     # Followed by one or more non-whitespace characters
-            )""", re.VERBOSE)
+                if sender not in {None, UNKNOWN}
+            ])
+        )
+
+        UNKNOWN_USERNAME_PATTERN = re.compile(
+            r"""
+            @       # Begins with @
+            [^\W_]  # Followed by anything that is a \w except _ (to avoid matching @_)
+            [\w]+   # Followed by one or more \w
+            """, re.VERBOSE
+        )
+
         for i, message in enumerate(self._message):
             if message:
-                for match in USERNAME_PATTERN.finditer(message):
+                for match in PARTICIPANT_PATTERN.finditer(message):
                     message = message[:match.start()] + ("@" + sender_to_number.get(match.group(0).lstrip("@"), "_")) + message[match.end():]
+                
+                for match in UNKNOWN_USERNAME_PATTERN.finditer(message):
+                    message = message[:match.start()] + ("@" + sender_to_number.get(match.group(0).lstrip("@"), "_")) + message[match.end():]
+            
             self._message[i] = message
 
 

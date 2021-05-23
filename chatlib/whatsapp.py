@@ -95,23 +95,29 @@ class WhatsAppChatData(BaseChatData):
         # Anonymize possible usernames/numbers in messages
         # NOTE(Rayhan): Examples that I have encountered myself all put mentioned users in the form
         # @DDDDDDDDDDDDD where D is a digit. There could be variations in other locale which I haven't seen.
-        AT_MENTION_PATTERN = re.compile(
-            r"""(
-                @       # Mention sign, @
-                [\d]+   # One or more numeric characters
-            )""" +
-            "|" +       # OR
+                # Anonymize usernames in messages
+        PARTICIPANT_PATTERN = re.compile(
             "|".join([
                 "(@" + sender + ")" for sender in self.participants
-                if sender not in {None}     # Every known usernames are compiled to one
-            ]),
-            re.VERBOSE
+                if sender not in {None}
+            ])
+        )
+
+        UNKNOWN_USERNAME_PATTERN = re.compile(
+            r"""
+            @       # Begins with @
+            [\d]+   # Followed by one or more numeric characters
+            """, re.VERBOSE
         )
 
         for i, message in enumerate(self._message):
             if message:
-                for match in AT_MENTION_PATTERN.finditer(message):
+                for match in PARTICIPANT_PATTERN.finditer(message):
                     message = message[:match.start()] + ("@" + sender_to_number.get(match.group(0).lstrip("@"), "_")) + message[match.end():]
+                
+                for match in UNKNOWN_USERNAME_PATTERN.finditer(message):
+                    message = message[:match.start()] + ("@" + sender_to_number.get(match.group(0).lstrip("@"), "_")) + message[match.end():]
+            
             self._message[i] = message
 
     def _separate_timestamp(self, line_segment):
