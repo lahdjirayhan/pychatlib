@@ -11,16 +11,18 @@ class WhatsAppChatData(BaseChatData):
 
         Args:
             path (str): Path to export file.
+        
+        Keyword Args:
+            anonymize (bool): If True, the chat data will be anonymized as good as possible. Defaults to False.
         """
         super().__init__(path, app_name = "WhatsApp", *args, **kwargs)
         
-    def read_from_file(self, path):
+    def read_from_file(self, path: str, anonymize: bool = False):
         """Read chat data from file
 
         Args:
-            path (str): Path to export file.
-        
-        Side note: anonymization is not available yet.
+            path (str): Path to export file
+            anonymize (bool, optional): If True, the chat data will be anonymized as good as possible. Defaults to False.
         """
         self._date_time, self._sender, self._event, self._message = [], [], [], []
         with open(path, encoding="utf-8", errors="ignore") as f:
@@ -29,10 +31,14 @@ class WhatsAppChatData(BaseChatData):
         
         date_pattern = infer_date(self._date_time)
         self._date_time = [datetime.strptime(i, date_pattern) for i in self._date_time]
-        self.database = [self._date_time, self._sender, self._event, self._message] # Not pandas dataframe?
         self.participants = set(self._sender)
         self.n_entry = len(self._date_time)
         self.start_date, self.end_date = self._date_time[0].date(), self._date_time[-1].date()
+
+        if anonymize:
+            self.anonymize()
+
+        self.database = [self._date_time, self._sender, self._event, self._message] # Not pandas dataframe?
 
         # NOTE(Rayhan) sort by _date_time to account for slight connection problems or deal ad hoc?
         # I'm inclined to leave it as it is and let user deal ad hoc
@@ -78,6 +84,47 @@ class WhatsAppChatData(BaseChatData):
         # row is new chat event
         self._record_new_row(date_time=timestamp, sender=sender, message=message)
     
+    def anonymize(self):
+        """Replace the known usernames from sender list
+        
+        Known usernames i.e. those contained in sender list will be replaced with integers
+        Unknown usernames i.e. perhaps mentioned social media @s etc. will be replaced with @_
+        """
+        sender_to_number = {j: str(i) for i, j in enumerate(self.participants)}
+
+        # Anonymize sender list
+        self._sender = [sender_to_number.get(sender, sender) for sender in self._sender]
+
+        # Anonymize possible usernames/numbers in messages
+        # NOTE(Rayhan): Examples that I have encountered myself all put mentioned users in the form
+        # @DDDDDDDDDDDDD where D is a digit. There could be variations in other locale which I haven't seen.
+                # Anonymize usernames in messages
+        PARTICIPANT_PATTERN = re.compile(
+            "(" +
+            "|".join([
+                "@" + sender for sender in self.participants
+                if sender not in {None}
+            ]) +
+            ")"
+        )
+
+        UNKNOWN_USERNAME_PATTERN = re.compile(
+            r"""
+            @       # Begins with @
+            [\d]+   # Followed by one or more numeric characters
+            """, re.VERBOSE
+        )
+
+        for i, message in enumerate(self._message):
+            if message:
+                for match in PARTICIPANT_PATTERN.finditer(message):
+                    message = message[:match.start()] + ("@" + sender_to_number.get(match.group(0).lstrip("@"), "_")) + message[match.end():]
+                
+                for match in UNKNOWN_USERNAME_PATTERN.finditer(message):
+                    message = message[:match.start()] + ("@" + sender_to_number.get(match.group(0).lstrip("@"), "_")) + message[match.end():]
+            
+            self._message[i] = message
+
     def _separate_timestamp(self, line_segment):
         if self.DA_SEP not in line_segment:
             return None, line_segment

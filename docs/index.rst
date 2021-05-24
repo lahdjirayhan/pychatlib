@@ -12,6 +12,7 @@ Welcome to pychatlib's documentation!
 
    line
    whatsapp
+   anonymization
 
 
 Indices and tables

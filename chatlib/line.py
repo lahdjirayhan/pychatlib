@@ -14,6 +14,9 @@ class LineChatData(BaseChatData):
 
         Args:
             path (str): Path to export file.
+        
+        Keyword Args:
+            anonymize (bool): If True, the chat data will be anonymized as good as possible. Defaults to False.
         """
         super().__init__(path, app_name = "LINE", *args, **kwargs)
     
@@ -45,11 +48,11 @@ class LineChatData(BaseChatData):
         
         # Find senders of events, if possible
         self.participants = {sender for sender in self._sender if sender is not None}
-        find_sender_of_event = lambda message: next((sender for sender in self.participants if message.startswith(tuple(self.participants))), None)
+        find_sender_of_event = lambda message: next((sender for sender in self.participants if message.startswith(sender)), None)
         for i, event in enumerate(self._event):
             if event and (sender := find_sender_of_event(event)):
                 self._sender[i] = sender
-                self._event[i] = self._event[i].lstrip(sender).lstrip()
+                self._event[i] = self._event[i].replace(sender, "").lstrip()
 
         date_pattern = infer_date(self._date_time)
         self._date_time = [datetime.strptime(i, date_pattern) for i in self._date_time]
@@ -73,7 +76,7 @@ class LineChatData(BaseChatData):
 
         self.OBJECT_PATTERN = re.compile(r"""
             ^\[          # Begins with a [
-            [^\]]+       # Followed by one or more of something other than a ]
+            .+           # Followed by one or more of anything other than line separators
             \]           # Followed by a ] (Stickers and media e.g. photo)
             $            # Ends (this is to prevent header-messages, it is quite popular i.e. [ANNOUNCEMENT])
         """, re.VERBOSE)
@@ -121,21 +124,34 @@ class LineChatData(BaseChatData):
         sender_to_number = {j: str(i) for i, j in enumerate(self.participants) if j != UNKNOWN}
 
         # Anonymize sender list
-        self._sender = [sender_to_number.get(sender, sender) for sender in self._sender if sender != UNKNOWN]
+        self._sender = [sender_to_number.get(sender, sender) for sender in self._sender]
         
         # Anonymize usernames in messages
-        USERNAME_PATTERN = re.compile(
+        PARTICIPANT_PATTERN = re.compile(
+            "(" +
             "|".join([
-                "(@" + sender + ")" for sender in self._sender
-                if sender not in {None, UNKNOWN} # Every sender names known is compiled to one
+                "@" + sender for sender in self.participants
+                if sender not in {None, UNKNOWN}
             ]) +
-            r"""(
-                @       # Begins with @
-                \w+     # Followed by one or more non-whitespace characters
-            )""", re.VERBOSE)
+            ")"
+        )
+
+        UNKNOWN_USERNAME_PATTERN = re.compile(
+            r"""
+            @       # Begins with @
+            [^\W_]  # Followed by anything that is a \w except _ (to avoid matching @_)
+            [\w]+   # Followed by one or more \w
+            """, re.VERBOSE
+        )
+
         for i, message in enumerate(self._message):
-            for match in USERNAME_PATTERN.finditer(message):
-                message = message[:match.start()] + ("@" + sender_to_number.get(match.lstrip("@"), "_")) + message[match.end():]
+            if message:
+                for match in PARTICIPANT_PATTERN.finditer(message):
+                    message = message[:match.start()] + ("@" + sender_to_number.get(match.group(0).lstrip("@"), "_")) + message[match.end():]
+                
+                for match in UNKNOWN_USERNAME_PATTERN.finditer(message):
+                    message = message[:match.start()] + ("@" + sender_to_number.get(match.group(0).lstrip("@"), "_")) + message[match.end():]
+            
             self._message[i] = message
 
 
