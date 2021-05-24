@@ -18,5 +18,10 @@ setup(
     author=author,
     packages=['chatlib'],
     long_description = readme_contents,
-    long_description_content_type = "text/markdown"
+    long_description_content_type = "text/markdown",
+    classifiers=[
+        "Development Status :: 1 - Planning",
+        "Intended Audience :: Developers",
+        "Intended Audience :: Science/Research"
+    ]
 )
